@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.faber.api.dm.doc.mapper.DocMapper">
+
+    <update id="addViewNum" parameterType="map">
+        UPDATE dm_doc SET view_num = IFNULL(view_num, 0) + 1 WHERE id = #{id}
+    </update>
+
+    <update id="syncDocViewChapterNumById" parameterType="map">
+        UPDATE dm_doc t SET t.view_chapter_num = (
+            SELECT IFNULL(SUM(c.view_num), 0) FROM dm_doc_chapter c WHERE c.doc_id = t.id
+        ) WHERE t.id = #{id}
+    </update>
+
+    <update id="syncDocViewChapterNumByChapterId" parameterType="map">
+        UPDATE dm_doc t SET t.view_chapter_num = (
+            SELECT IFNULL(SUM(c.view_num), 0) FROM dm_doc_chapter c WHERE c.doc_id = t.id
+        ) WHERE t.id = (
+            SELECT a.doc_id FROM dm_doc_chapter a WHERE a.id = #{chapterId}
+        )
+    </update>
+
+</mapper>
