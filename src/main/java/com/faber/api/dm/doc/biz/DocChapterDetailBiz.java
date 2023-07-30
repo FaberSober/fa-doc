@@ -47,7 +47,7 @@ public class DocChapterDetailBiz extends BaseBiz<DocChapterDetailMapper,DocChapt
     @Override
     public boolean updateById(DocChapterDetail entity) {
         // 过滤HTML文本，防止XSS攻击
-        entity.setContent(HtmlUtil.filter(entity.getContent()));
+//        entity.setContent(HtmlUtil.filter(entity.getContent()));
 
         // 判断保存历史记录
         docChapterHisBiz.saveDocChapterDetailHis(entity);
