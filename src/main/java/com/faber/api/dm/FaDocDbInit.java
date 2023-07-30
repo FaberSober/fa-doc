@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class FaBizDbInit implements DbInit {
+public class FaDocDbInit implements DbInit {
 
     @Override
     public String getNo() {
-        return "fa-biz";
+        return "fa-doc";
     }
 
     @Override
