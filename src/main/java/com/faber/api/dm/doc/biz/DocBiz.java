@@ -55,9 +55,19 @@ public class DocBiz extends BaseBiz<DocMapper, Doc> {
     }
 
     public Doc outGetByShareCode(String shareCode) {
-        return lambdaQuery()
+        Doc doc = lambdaQuery()
                 .eq(Doc::getShareCode, shareCode)
                 .one();
+
+        if (doc == null) throw new BuzzException("文档未找到");
+
+        // 查询是否公开
+        if (!doc.getIsPublic()) throw new BuzzException("文档未找到");
+
+        // 文档访问次数累加
+        baseMapper.addViewNum(doc.getId());
+
+        return doc;
     }
 
     public TableRet<Doc> pageMine(QueryParams query) {
