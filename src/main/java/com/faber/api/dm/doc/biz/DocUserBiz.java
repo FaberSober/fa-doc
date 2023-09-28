@@ -1,5 +1,6 @@
 package com.faber.api.dm.doc.biz;
 
+import com.faber.api.base.admin.entity.User;
 import com.faber.api.dm.doc.entity.DocUser;
 import com.faber.api.dm.doc.mapper.DocUserMapper;
 import com.faber.api.dm.doc.vo.req.DocUserQueryVo;
@@ -49,6 +50,10 @@ public class DocUserBiz extends BaseBiz<DocUserMapper, DocUser> {
             link.setDocId(docId);
             this.save(link);
         }
+    }
+
+    public List<User> getDocUserList(Integer docId) {
+        return baseMapper.getDocUserList(docId);
     }
 
 }

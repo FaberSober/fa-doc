@@ -1,5 +1,6 @@
 package com.faber.api.dm.doc.mapper;
 
+import com.faber.api.base.admin.entity.User;
 import com.faber.api.dm.doc.entity.DocUser;
 import com.faber.api.dm.doc.vo.req.DocUserQueryVo;
 import com.faber.api.dm.doc.vo.ret.DocUserRetVo;
@@ -18,5 +19,7 @@ import java.util.List;
 public interface DocUserMapper extends FaBaseMapper<DocUser> {
 
     List<DocUserRetVo> pageVo(@Param("query") DocUserQueryVo query, @Param("sorter") String sorter);
+
+    List<User> getDocUserList(@Param("docId") Integer docId);
 
 }

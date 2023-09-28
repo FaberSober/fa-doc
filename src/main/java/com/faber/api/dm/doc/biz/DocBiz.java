@@ -1,5 +1,6 @@
 package com.faber.api.dm.doc.biz;
 
+import com.faber.api.base.admin.entity.User;
 import com.faber.api.dm.doc.entity.Doc;
 import com.faber.api.dm.doc.entity.DocUser;
 import com.faber.api.dm.doc.mapper.DocMapper;
@@ -68,6 +69,13 @@ public class DocBiz extends BaseBiz<DocMapper, Doc> {
         baseMapper.addViewNum(doc.getId());
 
         return doc;
+    }
+
+    @Override
+    public void decorateOne(Doc i) {
+        List<User> userList = docUserBiz.getDocUserList(i.getId());
+        i.setUserList(userList);
+        i.setUserNameList(userList.stream().map(user -> user.getName()).collect(Collectors.toList()));
     }
 
     public TableRet<Doc> pageMine(QueryParams query) {

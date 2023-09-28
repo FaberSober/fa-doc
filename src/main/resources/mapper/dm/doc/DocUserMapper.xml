@@ -26,4 +26,10 @@
         </if>
     </select>
 
+    <select id="getDocUserList" parameterType="map" resultType="com.faber.api.base.admin.entity.User">
+        SELECT t.* FROM base_user t WHERE t.deleted = 0 AND t.id IN (
+            SELECT a.user_id FROM dm_doc_user a WHERE a.deleted = 0 AND a.doc_id = #{docId}
+        )
+    </select>
+
 </mapper>

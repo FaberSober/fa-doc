@@ -1,15 +1,19 @@
 package com.faber.api.dm.doc.entity;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.faber.api.base.admin.entity.User;
 import com.faber.core.annotation.FaModalName;
 import com.faber.core.bean.BaseDelEntity;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -43,5 +47,13 @@ public class Doc extends BaseDelEntity {
 
     @ExcelProperty("章节总访问次数")
     private Integer viewChapterNum;
+
+    @ExcelProperty("参与用户")
+    @TableField(exist = false)
+    private List<String> userNameList;
+
+    @ExcelIgnore
+    @TableField(exist = false)
+    private List<User> userList;
 
 }
