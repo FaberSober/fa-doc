@@ -58,6 +58,15 @@ public class DocUserBiz extends BaseBiz<DocUserMapper, DocUser> {
         }
     }
 
+    public void batchRemoveUsers(List<String> userIds, List<Integer> docIds) {
+        for (Integer docId : docIds) {
+            lambdaUpdate()
+                    .eq(DocUser::getDocId, docId)
+                    .in(DocUser::getUserId, userIds)
+                    .remove();
+        }
+    }
+
     public List<User> getDocUserList(Integer docId) {
         return baseMapper.getDocUserList(docId);
     }

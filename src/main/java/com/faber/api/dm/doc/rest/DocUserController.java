@@ -60,4 +60,15 @@ public class DocUserController extends BaseController<DocUserBiz, DocUser, Integ
         return ok();
     }
 
+    @FaLogOpr(value = "批量删除用户", crud = LogCrudEnum.C)
+    @RequestMapping(value = "/batchRemoveUsers", method = RequestMethod.POST)
+    @ResponseBody
+    @LogNoRet
+    public Ret<Boolean> batchRemoveUsers(@RequestBody Map<String, Object> params) {
+        List<String> userIds = (List<String>) params.get("userIds");
+        List<Integer> docIds = (List<Integer>) params.get("docIds");
+        baseBiz.batchRemoveUsers(userIds, docIds);
+        return ok();
+    }
+
 }
