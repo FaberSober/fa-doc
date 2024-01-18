@@ -30,6 +30,12 @@ public class DocUserBiz extends BaseBiz<DocUserMapper, DocUser> {
         return new TableRet<>(info);
     }
 
+    public void batchAddUsers(List<String> userIds, List<Integer> docIds) {
+        for (Integer docId : docIds) {
+            addUsers(userIds, docId);
+        }
+    }
+
     public void addUsers(List<String> userIds, Integer docId) {
         for (String userId : userIds) {
             long count = lambdaQuery()
