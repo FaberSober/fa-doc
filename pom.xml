@@ -19,11 +19,12 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/cn.easy-es/easy-es-boot-starter -->
-<!--        <dependency>-->
-<!--            <groupId>cn.easy-es</groupId>-->
-<!--            <artifactId>easy-es-boot-starter</artifactId>-->
-<!--            <version>2.0.0-beta1</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>cn.easy-es</groupId>
+            <artifactId>easy-es-boot-starter</artifactId>
+            <version>2.0.0-beta1</version>
+            <scope>provided</scope>
+        </dependency>
 
     </dependencies>
 
