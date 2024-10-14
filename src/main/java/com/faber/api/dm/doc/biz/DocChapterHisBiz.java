@@ -11,7 +11,7 @@ import com.faber.api.dm.doc.mapper.DocChapterHisMapper;
 import com.faber.core.web.biz.BaseBiz;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * DOC-文档章节
