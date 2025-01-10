@@ -1,10 +1,7 @@
 package com.faber;
 
 import cn.easyes.starter.register.EsMapperScan;
-import cn.xuyanwu.spring.file.storage.spring.EnableFileStorage;
-import com.alicp.jetcache.anno.config.EnableMethodCache;
 import com.dtflys.forest.springboot.annotation.ForestScan;
-import com.yomahub.tlog.core.enhance.bytes.AspectLogEnhance;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.server.ConfigurableWebServerFactory;
@@ -23,13 +20,13 @@ import java.util.Set;
 @EnableScheduling
 @EnableTransactionManagement
 @ServletComponentScan
-@EnableMethodCache(basePackages = "com.faber")
+//@EnableMethodCache(basePackages = "com.faber")
 @ForestScan("com.faber")
 @EsMapperScan("com.faber.api.**.esmapper") // 不使用ES屏蔽此行代码
-@EnableFileStorage // https://spring-file-storage.xuyanwu.cn
+//@EnableFileStorage // https://spring-file-storage.xuyanwu.cn
 public class FaTestApp {
 
-    static { AspectLogEnhance.enhance(); }//进行日志增强，自动判断日志框架
+//    static { AspectLogEnhance.enhance(); }//进行日志增强，自动判断日志框架
 
     public static void main(String[] args) {
         new SpringApplicationBuilder(FaTestApp.class).run(args);
