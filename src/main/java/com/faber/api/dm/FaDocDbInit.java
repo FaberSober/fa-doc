@@ -15,7 +15,7 @@ public class FaDocDbInit implements DbInit {
 
     @Override
     public String getName() {
-        return "业务模块名称";
+        return "文档管理";
     }
 
 }
