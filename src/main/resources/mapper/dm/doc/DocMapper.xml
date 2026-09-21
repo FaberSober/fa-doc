@@ -3,19 +3,37 @@
 
 <mapper namespace="com.faber.api.dm.doc.mapper.DocMapper">
 
-    <update id="addViewNum" parameterType="map">
+    <update id="addViewNum" databaseId="mysql" parameterType="map">
         UPDATE dm_doc SET view_num = IFNULL(view_num, 0) + 1 WHERE id = #{id}
     </update>
 
-    <update id="syncDocViewChapterNumById" parameterType="map">
-        UPDATE dm_doc t SET t.view_chapter_num = (
+    <update id="addViewNum" databaseId="postgre" parameterType="map">
+        UPDATE dm_doc SET view_num = COALESCE(view_num, 0) + 1 WHERE id = #{id}
+    </update>
+
+    <update id="syncDocViewChapterNumById" databaseId="mysql" parameterType="map">
+        UPDATE dm_doc t SET view_chapter_num = (
             SELECT IFNULL(SUM(c.view_num), 0) FROM dm_doc_chapter c WHERE c.doc_id = t.id
         ) WHERE t.id = #{id}
     </update>
 
-    <update id="syncDocViewChapterNumByChapterId" parameterType="map">
-        UPDATE dm_doc t SET t.view_chapter_num = (
+    <update id="syncDocViewChapterNumById" databaseId="postgre" parameterType="map">
+        UPDATE dm_doc AS t SET view_chapter_num = (
+            SELECT COALESCE(SUM(c.view_num), 0)::integer FROM dm_doc_chapter c WHERE c.doc_id = t.id
+        ) WHERE t.id = #{id}
+    </update>
+
+    <update id="syncDocViewChapterNumByChapterId" databaseId="mysql" parameterType="map">
+        UPDATE dm_doc t SET view_chapter_num = (
             SELECT IFNULL(SUM(c.view_num), 0) FROM dm_doc_chapter c WHERE c.doc_id = t.id
+        ) WHERE t.id = (
+            SELECT a.doc_id FROM dm_doc_chapter a WHERE a.id = #{chapterId}
+        )
+    </update>
+
+    <update id="syncDocViewChapterNumByChapterId" databaseId="postgre" parameterType="map">
+        UPDATE dm_doc AS t SET view_chapter_num = (
+            SELECT COALESCE(SUM(c.view_num), 0)::integer FROM dm_doc_chapter c WHERE c.doc_id = t.id
         ) WHERE t.id = (
             SELECT a.doc_id FROM dm_doc_chapter a WHERE a.id = #{chapterId}
         )

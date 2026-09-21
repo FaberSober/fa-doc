@@ -4,11 +4,11 @@
 <mapper namespace="com.faber.api.dm.doc.mapper.DocUserMapper">
 
     <select id="pageVo" parameterType="com.faber.api.dm.doc.vo.req.DocUserQueryVo" resultType="com.faber.api.dm.doc.vo.ret.DocUserRetVo">
-        SELECT t.*, u.`name`, u.username
+        SELECT t.*, u.name, u.username
         FROM dm_doc_user t
         LEFT JOIN base_user u ON t.user_id = u.id
-        WHERE t.deleted = 0
-        AND u.deleted = 0
+        WHERE t.deleted = false
+        AND u.deleted = false
         <if test="query.docId != null and query.docId != ''">
             AND t.doc_id = #{query.docId}
         </if>
@@ -16,10 +16,10 @@
             AND t.user_id = #{query.userId}
         </if>
         <if test="query.name != null and query.name != ''">
-            AND u.`name` LIKE concat('%', #{query.name}, '%')
+            AND u.name LIKE concat('%', #{query.name}, '%')
         </if>
         <if test="query.username != null and query.username != ''">
-            AND u.`username` LIKE concat('%', #{query.username}, '%')
+            AND u.username LIKE concat('%', #{query.username}, '%')
         </if>
         <if test="sorter != null and sorter != ''">
             ORDER BY ${sorter}
@@ -27,8 +27,8 @@
     </select>
 
     <select id="getDocUserList" parameterType="map" resultType="com.faber.api.base.admin.entity.User">
-        SELECT t.* FROM base_user t WHERE t.deleted = 0 AND t.id IN (
-            SELECT a.user_id FROM dm_doc_user a WHERE a.deleted = 0 AND a.doc_id = #{docId}
+        SELECT t.* FROM base_user t WHERE t.deleted = false AND t.id IN (
+            SELECT a.user_id FROM dm_doc_user a WHERE a.deleted = false AND a.doc_id = #{docId}
         )
     </select>
 

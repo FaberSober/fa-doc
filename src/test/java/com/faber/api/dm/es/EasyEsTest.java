@@ -7,19 +7,18 @@ import com.faber.FaTestApp;
 import com.faber.api.dm.es.entity.Document;
 import com.faber.api.dm.es.esmapper.DocumentEsMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import jakarta.annotation.Resource;
 import java.util.List;
 
 @Slf4j
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {FaTestApp.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = FaTestApp.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class EasyEsTest {
 
     @Resource
@@ -52,7 +51,7 @@ public class EasyEsTest {
                 .eq(Document::getTitle, title)
                 .one();
         System.out.println(document);
-        Assert.assertEquals(title,document.getTitle());
+        Assertions.assertEquals(title,document.getTitle());
     }
 
     @Test
@@ -63,7 +62,7 @@ public class EasyEsTest {
                 .eq(Document::getId, "testId100001")
                 .one();
         System.out.println(document);
-        Assert.assertEquals(title,document.getTitle());
+        Assertions.assertEquals(title,document.getTitle());
     }
 
     @Test

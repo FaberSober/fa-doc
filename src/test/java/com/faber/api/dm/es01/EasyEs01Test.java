@@ -15,18 +15,18 @@ import com.faber.api.dm.es.entity.Document;
 import com.faber.api.dm.es01.entity.Document01;
 import com.faber.api.dm.es01.esmapper.Document01EsMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {FaTestApp.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = FaTestApp.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class EasyEs01Test {
 
     @Resource
@@ -57,7 +57,7 @@ public class EasyEs01Test {
                 document.setDocId(docChapter.getDocId());
                 document.setTitle(docChapter.getName());
                 document.setCrtName(docChapter.getCrtName());
-                document.setCrtTime(DateUtil.formatLocalDateTime(docChapter.getCrtTime()));
+                document.setCrtTime(DateUtil.formatDateTime(docChapter.getCrtTime()));
                 if (docChapterDetail != null) {
                     String content = HtmlUtil.cleanHtmlTag(docChapterDetail.getContent());
                     document.setContent(content);

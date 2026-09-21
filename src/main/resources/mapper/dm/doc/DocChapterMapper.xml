@@ -3,8 +3,12 @@
 
 <mapper namespace="com.faber.api.dm.doc.mapper.DocChapterMapper">
 
-    <update id="addViewNum" parameterType="map">
+    <update id="addViewNum" databaseId="mysql" parameterType="map">
         UPDATE dm_doc_chapter SET view_num = IFNULL(view_num, 0) + 1 WHERE id = #{id}
+    </update>
+
+    <update id="addViewNum" databaseId="postgre" parameterType="map">
+        UPDATE dm_doc_chapter SET view_num = COALESCE(view_num, 0) + 1 WHERE id = #{id}
     </update>
 
 </mapper>
