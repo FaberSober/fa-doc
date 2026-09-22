@@ -1,9 +1,10 @@
 package com.faber.api.dm.doc.biz;
 
-import cn.hutool.http.HtmlUtil;
 import com.faber.api.dm.doc.entity.DocChapterDetail;
 import com.faber.api.dm.doc.mapper.DocChapterDetailMapper;
 import com.faber.core.web.biz.BaseBiz;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,21 @@ import java.util.concurrent.Executor;
  */
 @Service
 public class DocChapterDetailBiz extends BaseBiz<DocChapterDetailMapper,DocChapterDetail> {
+
+    private static final String HTML_BASE_URI = "https://fa-doc.invalid/";
+    private static final Safelist DOC_HTML_SAFELIST = Safelist.relaxed()
+            .preserveRelativeLinks(true)
+            .addTags("audio", "video", "source")
+            .addAttributes("pre", "class")
+            .addAttributes("code", "class")
+            .addAttributes("audio", "src", "controls", "height", "width", "poster", "preload", "autoplay", "loop", "muted", "playsinline")
+            .addAttributes("video", "src", "controls", "height", "width", "poster", "preload", "autoplay", "loop", "muted", "playsinline")
+            .addAttributes("source", "src", "type")
+            .addProtocols("audio", "src", "http", "https")
+            .addProtocols("audio", "poster", "http", "https")
+            .addProtocols("video", "src", "http", "https")
+            .addProtocols("video", "poster", "http", "https")
+            .addProtocols("source", "src", "http", "https");
 
     @Autowired
     private Executor executor;
@@ -46,13 +62,17 @@ public class DocChapterDetailBiz extends BaseBiz<DocChapterDetailMapper,DocChapt
 
     @Override
     public boolean updateById(DocChapterDetail entity) {
-        // 过滤HTML文本，防止XSS攻击
-//        entity.setContent(HtmlUtil.filter(entity.getContent()));
+        entity.setContent(cleanHtml(entity.getContent()));
 
         // 判断保存历史记录
         docChapterHisBiz.saveDocChapterDetailHis(entity);
 
         return super.updateById(entity);
+    }
+
+    private String cleanHtml(String content) {
+        if (content == null) return null;
+        return Jsoup.clean(content, HTML_BASE_URI, DOC_HTML_SAFELIST);
     }
 
     public DocChapterDetail outGetById(String shareCode, Integer id) {
