@@ -36,10 +36,10 @@ public class DocChapterDetailController extends BaseController<DocChapterDetailB
 
     @IgnoreUserToken
     @FaLogOpr(value = "查询", crud = LogCrudEnum.R)
-    @RequestMapping(value = "/outGetById/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/outGetById/{shareCode}/{id}", method = RequestMethod.GET)
     @ResponseBody
-    public Ret<DocChapterDetail> outGetById(@PathVariable Integer id) {
-        DocChapterDetail o = baseBiz.outGetById(id);
+    public Ret<DocChapterDetail> outGetById(@PathVariable("shareCode") String shareCode, @PathVariable("id") Integer id) {
+        DocChapterDetail o = baseBiz.outGetById(shareCode, id);
         return ok(o);
     }
 

@@ -55,7 +55,8 @@ public class DocChapterDetailBiz extends BaseBiz<DocChapterDetailMapper,DocChapt
         return super.updateById(entity);
     }
 
-    public DocChapterDetail outGetById(Integer id) {
+    public DocChapterDetail outGetById(String shareCode, Integer id) {
+        docChapterBiz.outGetById(shareCode, id);
         DocChapterDetail detail = super.getById(id);
 
         executor.execute(() -> {

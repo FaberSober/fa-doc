@@ -56,17 +56,26 @@ public class DocBiz extends BaseBiz<DocMapper, Doc> {
     }
 
     public Doc outGetByShareCode(String shareCode) {
+        Doc doc = getPublicByShareCode(shareCode);
+
+        // 文档访问次数累加
+        baseMapper.addViewNum(doc.getId());
+
+        return doc;
+    }
+
+    /**
+     * 查询公开文档，但不增加文档访问次数。
+     * 公开章节树、章节和详情接口复用此校验，避免只凭 docId/chapterId 访问内容。
+     */
+    public Doc getPublicByShareCode(String shareCode) {
         Doc doc = lambdaQuery()
                 .eq(Doc::getShareCode, shareCode)
                 .one();
 
-        if (doc == null) throw new BuzzException("文档未找到");
-
-        // 查询是否公开
-        if (!doc.getIsPublic()) throw new BuzzException("文档未找到");
-
-        // 文档访问次数累加
-        baseMapper.addViewNum(doc.getId());
+        if (doc == null || !Boolean.TRUE.equals(doc.getIsPublic())) {
+            throw new BuzzException("文档未找到");
+        }
 
         return doc;
     }

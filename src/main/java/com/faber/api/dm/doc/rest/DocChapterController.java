@@ -35,29 +35,29 @@ public class DocChapterController extends BaseTreeController<DocChapterBiz, DocC
     @IgnoreUserToken
     @FaLogOpr(value = "查询树", crud = LogCrudEnum.R)
     @LogNoRet
-    @RequestMapping(value = "/outGetTree", method = RequestMethod.POST)
+    @RequestMapping(value = "/outGetTree/{shareCode}", method = RequestMethod.POST)
     @ResponseBody
-    public Ret<List<TreeNode<DocChapter>>> outGetTree(@RequestBody QueryParams query) {
-        List<TreeNode<DocChapter>> treeList = baseBiz.getTree(query);
+    public Ret<List<TreeNode<DocChapter>>> outGetTree(@PathVariable("shareCode") String shareCode, @RequestBody QueryParams query) {
+        List<TreeNode<DocChapter>> treeList = baseBiz.outGetTree(shareCode, query);
         return ok(treeList);
     }
 
     @IgnoreUserToken
     @FaLogOpr(value = "查询", crud = LogCrudEnum.R)
-    @RequestMapping(value = "/outGetById/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/outGetById/{shareCode}/{id}", method = RequestMethod.GET)
     @ResponseBody
-    public Ret<DocChapter> outGetById(@PathVariable Integer id) {
-        DocChapter o = baseBiz.getById(id);
+    public Ret<DocChapter> outGetById(@PathVariable("shareCode") String shareCode, @PathVariable("id") Integer id) {
+        DocChapter o = baseBiz.outGetById(shareCode, id);
         return ok(o);
     }
 
     @IgnoreUserToken
     @FaLogOpr(value = "分页查询", crud = LogCrudEnum.R)
     @LogNoRet
-    @RequestMapping(value = "/outPage", method = RequestMethod.POST)
+    @RequestMapping(value = "/outPage/{shareCode}", method = RequestMethod.POST)
     @ResponseBody
-    public TableRet<DocChapter> outPage(@RequestBody QueryParams query) {
-        return baseBiz.selectPageByQuery(query);
+    public TableRet<DocChapter> outPage(@PathVariable("shareCode") String shareCode, @RequestBody QueryParams query) {
+        return baseBiz.outPage(shareCode, query);
     }
 
 }
