@@ -12,7 +12,7 @@
 | D01 | 公开访问 | 公开文档资源校验 | 章节树、章节和详情必须校验分享码对应的公开文档 | 执行开发（P0） | ✅已完成 |
 | D02 | 内容安全 | 富文本白名单清洗 | 保存当前内容和历史内容前统一清洗 HTML | 执行开发（P0） | ✅已完成 |
 | D03 | 资源授权 | 文档级权限校验 | 章节、详情、历史和文档用户操作不能只依赖菜单或前端限制 | 执行开发（P0） | ✅已完成 |
-| D04 | 分享安全 | 分享码强度与唯一性 | 使用服务端安全随机值，并增加数据库唯一约束 | 执行开发（P1） | ❌未完成 |
+| D04 | 分享安全 | 分享码随机生成与唯一校验 | 默认生成4位随机码，允许自定义，提交时校验唯一 | 执行开发（P1） | ✅已完成 |
 | D05 | API 契约 | 空数据与异常处理 | 修复不存在文档空指针、空分页和详情请求错误反馈 | 执行开发（P1） | ❌未完成 |
 | D06 | 前端状态 | loading 机制迁移 | 文档页面改用 `useApiLoading`，并修正实际请求 URL | 执行开发（P1） | ❌未完成 |
 | D07 | 编辑器 | 保存基线与生命周期 | 保存成功更新基线，移除模块级共享状态，清理卸载事件 | 执行开发（P1） | ❌未完成 |
@@ -61,11 +61,12 @@
 - 保留菜单权限作为入口权限，但不能用菜单权限替代资源归属校验。
 - 参考：`fa-base/src/main/java/com/faber/config/interceptor/PermissionInterceptor.java`、`fa-core/src/main/java/com/faber/core/web/rest/BaseController.java`、`fa-doc/src/main/java/com/faber/api/dm/doc/biz/`。
 
-### D04：分享码强度与唯一性
+### D04：分享码随机生成与唯一校验
 
-- 将 `DocModal` 的默认生成逻辑改为调用服务端生成或使用密码学安全随机值。
-- 不主动使已有分享链接失效；新生成和修改分享码必须满足唯一性。
-- MySQL、PostgreSQL 都增加 `share_code` 唯一约束前，先检查并处理已有重复数据。
+- `DocModal` 的“生成分享码”使用现有 `FaUtils.generateId(4)` 生成4位随机码。
+- 分享码继续允许用户手动填写，支持有业务含义的单词，长度上限沿用表单的32个字符。
+- `DocBiz.saveBefore` 在新增和修改提交前检查分享码唯一性，修改当前文档时排除自身记录。
+- 不增加数据库迁移和额外强度限制，避免超出当前文档数量与使用场景的实际需求。
 - 参考：`frontend/apps/admin/features/fa-doc-pages/pages/admin/dm/doc/doc/modal/DocModal.tsx`、`fa-doc/src/main/java/com/faber/api/dm/doc/biz/DocBiz.java`。
 
 ### D05：空数据与异常处理
