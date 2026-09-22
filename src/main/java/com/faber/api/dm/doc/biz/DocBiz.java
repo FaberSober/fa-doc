@@ -1,5 +1,6 @@
 package com.faber.api.dm.doc.biz;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.faber.api.base.admin.entity.User;
 import com.faber.api.dm.doc.entity.Doc;
 import com.faber.api.dm.doc.entity.DocUser;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,8 +31,30 @@ public class DocBiz extends BaseBiz<DocMapper, Doc> {
     @Resource
     DocUserBiz docUserBiz;
 
+    @Resource
+    DocAccessBiz docAccessBiz;
+
+    @Override
+    public QueryWrapper<Doc> parseQuery(QueryParams query) {
+        QueryWrapper<Doc> wrapper = super.parseQuery(query);
+        wrapper.in("id", docAccessBiz.getAccessibleDocIds());
+        return wrapper;
+    }
+
+    @Override
+    public List<Doc> list() {
+        QueryWrapper<Doc> wrapper = new QueryWrapper<>();
+        wrapper.in("id", docAccessBiz.getAccessibleDocIds());
+        List<Doc> list = super.list(wrapper);
+        decorateList(list);
+        return list;
+    }
+
     @Override
     protected void saveBefore(Doc entity) {
+        if (entity.getId() != null) {
+            docAccessBiz.requireDocAccess(entity.getId());
+        }
         long count = lambdaQuery()
                 .eq(Doc::getShareCode, entity.getShareCode())
                 .ne(entity.getId() != null, Doc::getId, entity.getId())
@@ -53,6 +78,104 @@ public class DocBiz extends BaseBiz<DocMapper, Doc> {
         docUserBiz.save(docUser);
 
         return true;
+    }
+
+    @Override
+    public Doc getById(Serializable id) {
+        Doc doc = super.getById(id);
+        if (doc != null) {
+            docAccessBiz.requireDocAccess(doc.getId());
+        }
+        return doc;
+    }
+
+    @Override
+    public Doc getDetailById(Serializable id) {
+        Doc doc = getById(id);
+        if (doc != null) {
+            decorateOne(doc);
+        }
+        return doc;
+    }
+
+    @Override
+    public <ID extends Serializable> List<Doc> getByIds(List<ID> ids) {
+        List<Doc> docs = super.getByIds(ids);
+        docs.forEach(doc -> docAccessBiz.requireDocAccess(doc.getId()));
+        return docs;
+    }
+
+    @Override
+    public boolean saveOrUpdate(Doc entity) {
+        return entity.getId() == null ? save(entity) : updateById(entity);
+    }
+
+    @Override
+    public boolean updateBatchById(Collection<Doc> entityList) {
+        if (entityList == null) return true;
+        for (Doc entity : entityList) {
+            if (!updateById(entity)) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean updateBatchById(Collection<Doc> entityList, int batchSize) {
+        return updateBatchById(entityList);
+    }
+
+    @Override
+    public boolean saveOrUpdateBatch(Collection<Doc> entityList) {
+        if (entityList == null) return true;
+        for (Doc entity : entityList) {
+            if (!saveOrUpdate(entity)) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean saveOrUpdateBatch(Collection<Doc> entityList, int batchSize) {
+        return saveOrUpdateBatch(entityList);
+    }
+
+    @Override
+    public boolean removeById(Serializable id) {
+        docAccessBiz.requireDocAccess(id);
+        return super.removeById(id);
+    }
+
+    @Override
+    public void removeBatchByIds(List<Serializable> ids) {
+        if (ids == null) return;
+        ids.forEach(docAccessBiz::requireDocAccess);
+        super.removeBatchByIds(ids);
+    }
+
+    @Override
+    public boolean removeBatchByIds(Collection<?> ids) {
+        if (ids == null || ids.isEmpty()) return true;
+        ids.forEach(id -> docAccessBiz.requireDocAccess((Serializable) id));
+        return super.removeBatchByIds(ids);
+    }
+
+    @Override
+    public void removePerById(Serializable id) {
+        docAccessBiz.requireDocAccess(id);
+        super.removePerById(id);
+    }
+
+    @Override
+    public void removePerByIds(Collection<? extends Serializable> ids) {
+        if (ids == null) return;
+        ids.forEach(docAccessBiz::requireDocAccess);
+        super.removePerByIds(ids);
+    }
+
+    @Override
+    public void removePerBatchByIds(List<Serializable> ids) {
+        if (ids == null) return;
+        ids.forEach(docAccessBiz::requireDocAccess);
+        super.removePerBatchByIds(ids);
     }
 
     public Doc outGetByShareCode(String shareCode) {
@@ -88,34 +211,15 @@ public class DocBiz extends BaseBiz<DocMapper, Doc> {
     }
 
     public TableRet<Doc> pageMine(QueryParams query) {
-        // 查询账户有访问权限的文档
-        List<Integer> docIds = docUserBiz.lambdaQuery()
-                .eq(DocUser::getUserId, getCurrentUserId())
-                .select(DocUser::getDocId)
-                .list()
-                .stream().map(i -> i.getDocId())
-                .collect(Collectors.toList());
-        if (docIds.isEmpty()) {
-            return new TableRet<>();
-        }
-
-        query.getQuery().put("id#$in", docIds);
+        query.getQuery().put("id#$in", docAccessBiz.getAccessibleDocIds());
         return super.selectPageByQuery(query);
     }
 
     public Doc getMineById(Integer id) {
-        Doc doc = super.getById(id);
-
-        // 查询是否有访问权限
-        long authCount = docUserBiz.lambdaQuery()
-                .eq(DocUser::getDocId, doc.getId())
-                .eq(DocUser::getUserId, getCurrentUserId())
-                .count();
-
-        if (authCount <= 0) {
-            throw new BuzzException("无权访问");
+        Doc doc = getById(id);
+        if (doc == null) {
+            throw new BuzzException("文档不存在");
         }
-
         return doc;
     }
 
