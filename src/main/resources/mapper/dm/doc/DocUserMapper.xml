@@ -32,4 +32,16 @@
         )
     </select>
 
+    <!-- 批量查询：一次取回多个文档的参与用户，避免逐文档查询 -->
+    <select id="getDocUserListByDocIds" parameterType="map" resultType="com.faber.api.dm.doc.vo.ret.DocUserBatchVo">
+        SELECT a.doc_id AS docId, u.*
+        FROM dm_doc_user a
+        INNER JOIN base_user u ON u.id = a.user_id
+        WHERE a.deleted = false
+        AND u.deleted = false
+        AND a.doc_id IN
+        <foreach collection="docIds" item="docId" open="(" separator="," close=")">#{docId}</foreach>
+        ORDER BY a.doc_id, u.id
+    </select>
+
 </mapper>

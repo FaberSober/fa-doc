@@ -3,6 +3,7 @@ package com.faber.api.dm.doc.biz;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.faber.api.dm.doc.entity.DocChapterDetail;
 import com.faber.api.dm.doc.mapper.DocChapterDetailMapper;
+import com.faber.core.context.BaseContextHandler;
 import com.faber.core.vo.query.QueryParams;
 import com.faber.core.web.biz.BaseBiz;
 import org.jsoup.Jsoup;
@@ -15,6 +16,7 @@ import jakarta.annotation.Resource;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
@@ -211,9 +213,18 @@ public class DocChapterDetailBiz extends BaseBiz<DocChapterDetailMapper,DocChapt
         docChapterBiz.outGetById(shareCode, id);
         DocChapterDetail detail = super.getById(id);
 
+        // 异步线程不会自动传播上下文（含租户），需显式传递，否则统计 SQL 会因缺少租户上下文失败
+        Map<String, Object> holdMap = BaseContextHandler.getHoldMap();
         executor.execute(() -> {
-            docChapterBiz.getBaseMapper().addViewNum(id);
-            docBiz.getBaseMapper().syncDocViewChapterNumByChapterId(id);
+            try {
+                BaseContextHandler.setHoldMap(holdMap);
+                docChapterBiz.getBaseMapper().addViewNum(id);
+                docBiz.getBaseMapper().syncDocViewChapterNumByChapterId(id);
+            } catch (Exception e) {
+                _logger.error("更新章节访问统计失败, chapterId={}", id, e);
+            } finally {
+                BaseContextHandler.remove();
+            }
         });
 
         return detail;

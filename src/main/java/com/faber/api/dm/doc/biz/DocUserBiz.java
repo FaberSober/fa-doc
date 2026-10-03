@@ -5,6 +5,7 @@ import com.faber.api.base.admin.entity.User;
 import com.faber.api.dm.doc.entity.DocUser;
 import com.faber.api.dm.doc.mapper.DocUserMapper;
 import com.faber.api.dm.doc.vo.req.DocUserQueryVo;
+import com.faber.api.dm.doc.vo.ret.DocUserBatchVo;
 import com.faber.api.dm.doc.vo.ret.DocUserRetVo;
 import com.faber.core.exception.BuzzException;
 import com.faber.core.vo.msg.TableRet;
@@ -18,8 +19,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -157,6 +162,20 @@ public class DocUserBiz extends BaseBiz<DocUserMapper, DocUser> {
     public void removePerBatchByIds(List<Serializable> ids) {
         if (ids == null) return;
         ids.forEach(this::removePerById);
+    }
+
+    /**
+     * 批量查询多个文档的参与用户，按文档ID分组，替代逐文档查询。
+     */
+    public Map<Integer, List<User>> getDocUserListByDocIds(List<Integer> docIds) {
+        if (docIds == null || docIds.isEmpty()) return Collections.emptyMap();
+        List<DocUserBatchVo> list = baseMapper.getDocUserListByDocIds(docIds);
+        Map<Integer, List<User>> map = new LinkedHashMap<>();
+        for (DocUserBatchVo vo : list) {
+            if (vo.getDocId() == null) continue;
+            map.computeIfAbsent(vo.getDocId(), k -> new ArrayList<>()).add(vo);
+        }
+        return map;
     }
 
     public TableRet<DocUserRetVo> pageVo(BasePageQuery<DocUserQueryVo> query) {

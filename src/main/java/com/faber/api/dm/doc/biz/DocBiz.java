@@ -5,6 +5,7 @@ import com.faber.api.base.admin.entity.User;
 import com.faber.api.dm.doc.entity.Doc;
 import com.faber.api.dm.doc.entity.DocUser;
 import com.faber.api.dm.doc.mapper.DocMapper;
+import com.faber.core.context.TenantContext;
 import com.faber.core.exception.BuzzException;
 import com.faber.core.vo.msg.TableRet;
 import com.faber.core.vo.query.QueryParams;
@@ -14,8 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -192,13 +195,15 @@ public class DocBiz extends BaseBiz<DocMapper, Doc> {
      * 公开章节树、章节和详情接口复用此校验，避免只凭 docId/chapterId 访问内容。
      */
     public Doc getPublicByShareCode(String shareCode) {
-        Doc doc = lambdaQuery()
-                .eq(Doc::getShareCode, shareCode)
-                .one();
+        // 公开分享页是匿名请求，没有租户上下文，先忽略租户条件定位文档
+        Doc doc = baseMapper.selectPublicByShareCodeIgnoreTenant(shareCode);
 
         if (doc == null || !Boolean.TRUE.equals(doc.getIsPublic())) {
             throw new BuzzException("文档未找到");
         }
+
+        // 以文档自身的租户作为本次请求的租户上下文，保证后续章节、详情查询仍受租户约束
+        TenantContext.setTenantId(doc.getTenantId());
 
         return doc;
     }
@@ -208,6 +213,23 @@ public class DocBiz extends BaseBiz<DocMapper, Doc> {
         List<User> userList = docUserBiz.getDocUserList(i.getId());
         i.setUserList(userList);
         i.setUserNameList(userList.stream().map(user -> user.getName()).collect(Collectors.toList()));
+    }
+
+    /**
+     * 列表场景下批量装配参与用户，避免逐文档查询。
+     */
+    @Override
+    public void decorateList(List<Doc> list) {
+        if (list == null || list.isEmpty()) return;
+
+        List<Integer> docIds = list.stream().map(Doc::getId).collect(Collectors.toList());
+        Map<Integer, List<User>> userMap = docUserBiz.getDocUserListByDocIds(docIds);
+        for (Doc doc : list) {
+            List<User> userList = userMap.get(doc.getId());
+            if (userList == null) userList = new ArrayList<>();
+            doc.setUserList(userList);
+            doc.setUserNameList(userList.stream().map(user -> user.getName()).collect(Collectors.toList()));
+        }
     }
 
     public TableRet<Doc> pageMine(QueryParams query) {

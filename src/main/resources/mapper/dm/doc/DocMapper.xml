@@ -3,6 +3,11 @@
 
 <mapper namespace="com.faber.api.dm.doc.mapper.DocMapper">
 
+    <!-- 公开分享页为匿名请求，无租户上下文，这里忽略租户条件按分享码定位文档 -->
+    <select id="selectPublicByShareCodeIgnoreTenant" parameterType="map" resultType="com.faber.api.dm.doc.entity.Doc">
+        SELECT t.* FROM dm_doc t WHERE t.share_code = #{shareCode} AND t.deleted = false LIMIT 1
+    </select>
+
     <update id="addViewNum" databaseId="mysql" parameterType="map">
         UPDATE dm_doc SET view_num = IFNULL(view_num, 0) + 1 WHERE id = #{id}
     </update>
