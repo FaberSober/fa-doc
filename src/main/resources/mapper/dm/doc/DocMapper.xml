@@ -11,31 +11,32 @@
         UPDATE dm_doc SET view_num = COALESCE(view_num, 0) + 1 WHERE id = #{id}
     </update>
 
+    <!-- 章节访问总数只汇总未软删除章节，章节已删除时不更新文档统计 -->
     <update id="syncDocViewChapterNumById" databaseId="mysql" parameterType="map">
         UPDATE dm_doc t SET view_chapter_num = (
-            SELECT IFNULL(SUM(c.view_num), 0) FROM dm_doc_chapter c WHERE c.doc_id = t.id
+            SELECT IFNULL(SUM(c.view_num), 0) FROM dm_doc_chapter c WHERE c.doc_id = t.id AND c.deleted = 0
         ) WHERE t.id = #{id}
     </update>
 
     <update id="syncDocViewChapterNumById" databaseId="postgre" parameterType="map">
         UPDATE dm_doc AS t SET view_chapter_num = (
-            SELECT COALESCE(SUM(c.view_num), 0)::integer FROM dm_doc_chapter c WHERE c.doc_id = t.id
+            SELECT COALESCE(SUM(c.view_num), 0)::integer FROM dm_doc_chapter c WHERE c.doc_id = t.id AND c.deleted IS FALSE
         ) WHERE t.id = #{id}
     </update>
 
     <update id="syncDocViewChapterNumByChapterId" databaseId="mysql" parameterType="map">
         UPDATE dm_doc t SET view_chapter_num = (
-            SELECT IFNULL(SUM(c.view_num), 0) FROM dm_doc_chapter c WHERE c.doc_id = t.id
+            SELECT IFNULL(SUM(c.view_num), 0) FROM dm_doc_chapter c WHERE c.doc_id = t.id AND c.deleted = 0
         ) WHERE t.id = (
-            SELECT a.doc_id FROM dm_doc_chapter a WHERE a.id = #{chapterId}
+            SELECT a.doc_id FROM dm_doc_chapter a WHERE a.id = #{chapterId} AND a.deleted = 0
         )
     </update>
 
     <update id="syncDocViewChapterNumByChapterId" databaseId="postgre" parameterType="map">
         UPDATE dm_doc AS t SET view_chapter_num = (
-            SELECT COALESCE(SUM(c.view_num), 0)::integer FROM dm_doc_chapter c WHERE c.doc_id = t.id
+            SELECT COALESCE(SUM(c.view_num), 0)::integer FROM dm_doc_chapter c WHERE c.doc_id = t.id AND c.deleted IS FALSE
         ) WHERE t.id = (
-            SELECT a.doc_id FROM dm_doc_chapter a WHERE a.id = #{chapterId}
+            SELECT a.doc_id FROM dm_doc_chapter a WHERE a.id = #{chapterId} AND a.deleted IS FALSE
         )
     </update>
 

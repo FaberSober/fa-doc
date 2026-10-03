@@ -9,6 +9,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
 import java.io.Serializable;
@@ -118,6 +119,7 @@ public class DocChapterDetailBiz extends BaseBiz<DocChapterDetailMapper,DocChapt
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateById(DocChapterDetail entity) {
         docAccessBiz.requireChapterAccess(entity.getId());
         entity.setContent(cleanHtml(entity.getContent()));
@@ -129,6 +131,7 @@ public class DocChapterDetailBiz extends BaseBiz<DocChapterDetailMapper,DocChapt
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateBatchById(Collection<DocChapterDetail> entityList) {
         if (entityList == null) return true;
         for (DocChapterDetail entity : entityList) {
@@ -204,6 +207,7 @@ public class DocChapterDetailBiz extends BaseBiz<DocChapterDetailMapper,DocChapt
     }
 
     public DocChapterDetail outGetById(String shareCode, Integer id) {
+        // 先校验分享码对应的公开文档和章节归属，通过后再统计访问量
         docChapterBiz.outGetById(shareCode, id);
         DocChapterDetail detail = super.getById(id);
 

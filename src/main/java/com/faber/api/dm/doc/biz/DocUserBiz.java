@@ -14,6 +14,7 @@ import com.faber.core.web.biz.BaseBiz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
 import java.io.Serializable;
@@ -168,14 +169,23 @@ public class DocUserBiz extends BaseBiz<DocUserMapper, DocUser> {
         return new TableRet<>(info);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void batchAddUsers(List<String> userIds, List<Integer> docIds) {
         for (Integer docId : docIds) {
             addUsers(userIds, docId);
         }
     }
 
+    /**
+     * 添加文档用户关联。
+     *
+     * <p>dm_doc_user(doc_id, user_id) 唯一约束下，同一文档同一用户只允许存在一条关联记录，
+     * 因此新增前先物理清理含软删除的历史关联（同时收敛历史重复数据），再写入有效关联。</p>
+     */
+    @Transactional(rollbackFor = Exception.class)
     public void addUsers(List<String> userIds, Integer docId) {
         docAccessBiz.requireDocAccess(docId);
+        if (userIds == null || userIds.isEmpty()) return;
         for (String userId : userIds) {
             long count = lambdaQuery()
                     .eq(DocUser::getUserId, userId)
@@ -183,11 +193,10 @@ public class DocUserBiz extends BaseBiz<DocUserMapper, DocUser> {
                     .count();
             if (count == 1) continue;
 
-            if (count > 0) {
-                lambdaUpdate()
-                        .eq(DocUser::getUserId, userId)
-                        .eq(DocUser::getDocId, docId)
-                        .remove();
+            // 清理历史（含软删除）关联，避免唯一约束冲突
+            List<Integer> historyIds = baseMapper.selectIdsIgnoreLogic(docId, userId);
+            if (!historyIds.isEmpty()) {
+                baseMapper.deleteByIdsIgnoreLogic(historyIds);
             }
 
             DocUser link = new DocUser();
@@ -197,6 +206,7 @@ public class DocUserBiz extends BaseBiz<DocUserMapper, DocUser> {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void batchRemoveUsers(List<String> userIds, List<Integer> docIds) {
         for (Integer docId : docIds) {
             docAccessBiz.requireDocAccess(docId);

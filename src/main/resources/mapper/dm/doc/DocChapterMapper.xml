@@ -3,12 +3,13 @@
 
 <mapper namespace="com.faber.api.dm.doc.mapper.DocChapterMapper">
 
+    <!-- 访问计数只累加未软删除章节，避免已删除章节继续产生统计 -->
     <update id="addViewNum" databaseId="mysql" parameterType="map">
-        UPDATE dm_doc_chapter SET view_num = IFNULL(view_num, 0) + 1 WHERE id = #{id}
+        UPDATE dm_doc_chapter SET view_num = IFNULL(view_num, 0) + 1 WHERE id = #{id} AND deleted = 0
     </update>
 
     <update id="addViewNum" databaseId="postgre" parameterType="map">
-        UPDATE dm_doc_chapter SET view_num = COALESCE(view_num, 0) + 1 WHERE id = #{id}
+        UPDATE dm_doc_chapter SET view_num = COALESCE(view_num, 0) + 1 WHERE id = #{id} AND deleted IS FALSE
     </update>
 
 </mapper>
